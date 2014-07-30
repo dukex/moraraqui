@@ -1,0 +1,2 @@
+export DATABASE_URL="postgres://duke@localhost/moraraqui?sslmode=disable"
+export MEMCACHEDCLOUD_SERVERS="127.0.0.1:11211"
