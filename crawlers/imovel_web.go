@@ -18,7 +18,7 @@ type ImovelWebBot struct {
 
 func (i *ImovelWebBot) FirstRun(channel chan *Property, state, city, neighborhood string) int {
 	url := i.urlFor("1", state, city, neighborhood)
-	doc := i.parserPage(channel, url)
+	doc := i.parserPage(channel, url, state, city)
 
 	lastPageS := doc.Find(".box-pagging .bt-pagging-num--p").Last().Text()
 	lastPage, _ := strconv.Atoi(lastPageS)
@@ -29,11 +29,11 @@ func (i *ImovelWebBot) Get(channel chan *Property, page int, state, city, neighb
 	pageS := strconv.Itoa(page)
 
 	url := i.urlFor(pageS, state, city, neighborhood)
-	i.parserPage(channel, url)
+	i.parserPage(channel, url, state, city)
 
 }
 
-func (i *ImovelWebBot) parserPage(channel chan *Property, url string) *goquery.Document {
+func (i *ImovelWebBot) parserPage(channel chan *Property, url, state, city string) *goquery.Document {
 	log.Println(" Parsing", url, "...")
 
 	doc, err := goquery.NewDocument(url)
@@ -55,10 +55,12 @@ func (i *ImovelWebBot) parserPage(channel chan *Property, url string) *goquery.D
 				property.Url = imovelwebbaseurl + url
 				// property.Size = z.getSize(s.Find(".l-inline-list li").Eq(0).Text())
 				property.Type = pType
+				property.State = strings.ToUpper(state)
+				property.City = strings.Replace(city, "-", " ", -1)
 				// property.Bedroom = z.getBedroom(s.Find(".l-inline-list li").Eq(1).Text())
 				property.Value = i.getValue(s.Find(".busca-item-preco").Text())
 				property.Neighborhood = strings.Split(property.Title, ",")[0]
-				DB.Save(&property)
+				go DB.Save(&property)
 			}
 			channel <- &property
 		}

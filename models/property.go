@@ -22,9 +22,11 @@ const (
 // )
 
 type Property struct {
-	Id           int64   `json:"id"`
-	Title        string  `sql:"not null" json:"title"`
-	Address      string  `sql:"not null" json:"address"`
+	Id           int64  `json:"id"`
+	Title        string `sql:"not null" json:"title"`
+	Address      string `sql:"not null" json:"address"`
+	City         string
+	State        string
 	Lat          float64 `json:"lat"`
 	Lng          float64 `json:"lng"`
 	Url          string  `sql:"not null;unique" json:"url"`
@@ -38,6 +40,10 @@ type Property struct {
 
 func (p Property) TableName() string {
 	return "properties"
+}
+
+func (p *Property) FullAddress() string {
+	return p.Address + "," + p.City + "," + p.State
 }
 
 func (p *Property) BeforeCreate() error {
@@ -64,14 +70,14 @@ func (p *Property) BeforeCreate() error {
 			p.Address = p.Neighborhood
 		}
 
-		addressLocationI, err := CacheGet(p.Address, addressLocation)
+		addressLocationI, err := CacheGet(p.FullAddress(), addressLocation)
 		addressLocation, ok := addressLocationI.([]float64)
 
 		if err != nil || !ok {
 			geoUrlRoot := "https://maps.googleapis.com/maps/api/geocode/json"
 			geoUrl, _ := url.Parse(geoUrlRoot)
 			geoParams := url.Values{}
-			geoParams.Add("address", p.Address+",Sao Paulo, SP")
+			geoParams.Add("address", p.FullAddress())
 			geoUrl.RawQuery = geoParams.Encode()
 			resGeoFetch, _ := http.Get(geoUrl.String())
 			defer resGeoFetch.Body.Close()
@@ -82,7 +88,7 @@ func (p *Property) BeforeCreate() error {
 			if len(geo.Results) > 0 {
 				location := geo.Results[0].Geometry.Location
 				addressLocation = []float64{location.Lat, location.Lng}
-				CacheSet(p.Address, addressLocation)
+				CacheSet(p.FullAddress(), addressLocation)
 			}
 		}
 
