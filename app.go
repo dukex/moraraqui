@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/dukex/moraraqui/crawlers"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 )
 
-const (
-	// According to Wikipedia, the Earth's radius is about 6,371km
-	EARTH_RADIUS = 6371
-)
+// const (
+//// According to Wikipedia, the Earth's radius is about 6,371km
+//  EARTH_RADIUS = 6371
+// )
 
 // func inRadius(lat, lng, radius string) ([]Imovel, error) {
 // 	// select_str := fmt.Sprintf("SELECT * FROM imoveis")
@@ -53,14 +52,6 @@ func main() {
 				item = nil
 				return
 			}
-		}
-	})
-
-	m.Get("/test", func(res http.ResponseWriter, req *http.Request) {
-
-		for {
-
-			time.Sleep(time.Second)
 		}
 	})
 
