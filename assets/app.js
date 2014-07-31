@@ -47,6 +47,43 @@ Map = (function() {
     }(index));
   };
 
+  // Map.prototype.getPlacesNearby = function() {
+  //   var radius  = 2.0,
+  //       center  = this.gMap.getCenter();
+  //       request = {
+  //         location: center,
+  //         radius: radius*1000
+  //       };
+
+  //     service = new google.maps.places.PlacesService(this.gMap);
+  //     service.nearbySearch(request, this.___addPlacesNearbyOnMap());
+  //  }
+  // Map.prototype.___addPlacesNearbyOnMap = function() {
+  //   _this = this;
+  //   return function(results, status) {
+  //     if (status == google.maps.places.PlacesServiceStatus.OK) {
+  //       for (var i = 0; i < results.length; i++) {
+  //         var place     = results[i],
+  //             gpmarker  = new google.maps.MarkerImage(
+  //                 place.icon,
+  //                 null,
+  //                 null,
+  //                 null,
+  //                 new google.maps.Size(25, 25)
+  //               ),
+  //             marker    = new google.maps.Marker({
+  //               position: place.geometry.location,
+  //               title: place.name,
+  //               icon: gpmarker
+  //             });
+
+  //         _this.oms.addMarker(marker);
+  //         marker.setMap(_this.gMap);
+  //       }
+  //     }
+  //   }
+  // }
+
   return Map;
 })();
 
@@ -83,50 +120,5 @@ function getPropertiesTo(path) {
     console.log("E", err.thrown)
   })
 }
-
-  // function centralize() {
-  //     window.setTimeout(function() {
-  //       radius = window.location.hash.replace("#", "")
-  //       if (radius.length < 1)  { radius = 2.0 }
-
-  //       center = map.getCenter();
-  //       getImoveis(center.lat(), center.lng(), radius);
-
-  //       var request = {
-  //         location: center,
-  //         radius: radius*1000
-  //                 };
-
-  //       service = new google.maps.places.PlacesService(map);
-  //       service.nearbySearch(request, callback);
-  //     }, 2000);
-  // }
-
-
-// function callback(results, status) {
-//   if (status == google.maps.places.PlacesServiceStatus.OK) {
-//     for (var i = 0; i < results.length; i++) {
-//       var place = results[i];
-
-//       var gpmarker    = new google.maps.MarkerImage(place.icon, null, null, null, new google.maps.Size(25, 25));
-
-//         var marker = new google.maps.Marker({
-//               position: place.geometry.location,
-//               title: place.name,
-//               icon: gpmarker
-//             });
-
-
-//             marker.setMap(map);
-//             window.markers.push(marker);
-
-//     console.log(place)
-
-//     }
-//   }
-// }
-
-
-
 
 google.maps.event.addDomListener(window, 'load', initialize);
