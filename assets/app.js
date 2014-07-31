@@ -1,73 +1,88 @@
-  function initialize() {
-    var defaultMapCenter = new google.maps.LatLng(-23.5472, -46.6344),
-    mapOptions = {
-      zoom: 14,
-      center: defaultMapCenter
-    };
+var Map;
 
-    window.bounds  = new google.maps.LatLngBounds();
-    window.map     = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-    window.markers = {}
-    window.infoWindows = {}
-    window.infoContent = {}
+Map = (function() {
+  function Map(elID) {
+    var defaultCenter = new google.maps.LatLng(-23.5472, -46.6344),
+        options = {
+          zoom: 11,
+          center: defaultCenter
+        };
 
+    this.gMap        = new google.maps.Map(document.getElementById(elID), options);
 
-    getDataTo(window.location.pathname);
+    this.bounds      = new google.maps.LatLngBounds();
+    this.markers     = {};
+    this.infoContent = {};
+    this.infoWindow  = new google.maps.InfoWindow();
+    this.oms         = new OverlappingMarkerSpiderfier(this.gMap);
 
-    window.iw = new google.maps.InfoWindow();
-    window.oms = new OverlappingMarkerSpiderfier(map);
-
-    oms.addListener('click', function(marker, event) {
-      iw.setContent(marker.desc);
-      iw.open(map, marker);
+    _this = this;
+    this.oms.addListener('click', function(marker, event) {
+      _this.infoWindow.setContent(marker.desc);
+      _this.infoWindow.open(_this.gMap, marker);
     });
   }
 
-  function getDataTo(path) {
-    oboe({
-      url: "/api/imoveis"+window.location.pathname
-    }).node(".*", function(){
-    }).done(function(imovel) {
-      if (imovel.lat != 0){
-        var imovelLatLng = new google.maps.LatLng(imovel.lat,imovel.lng),
-            i = imovel.id;
+  Map.prototype.extendBounds = function(latLng) {
+    this.bounds.extend(latLng);
+    this.gMap.panToBounds(this.bounds);
+    this.gMap.fitBounds(this.bounds);
+  };
 
-        // var image = {
-        //   url: "/house.png"
-        // };
-
-        window.bounds.extend(imovelLatLng);
-        window.infoContent[i] = '<div id="content">'+
-           '<div id="siteNotice">'+
-           '</div>'+
-           '<h1 id="firstHeading" class="firstHeading">'+imovel.address+'</h1>'+
-           '<div id="bodyContent">'+
-            JSON.stringify(imovel, undefined, 2);
-           '</div>'+
-           '</div>';
-
-        window.markers[i] = new google.maps.Marker({
-          position: imovelLatLng,
-          title: imovel.address
-          // icon: image
-        });
-
-        window.markers[i].setMap(map);
-        window.oms.addMarker(window.markers[i]);
-
-
-
-        google.maps.event.addListener(window.markers[i], 'click', function(infoKey) {
-          return function(){
-            window.iw.setContent(window.infoContent[infoKey]);
-            window.iw.open(map, window.markers[i]);
-          }
-        }(i));
-      }
-    }).fail(function(err){
-      console.log("E", err)
-    })
+  Map.prototype.setContent = function(index, data) {
+    this.infoContent[index] = data
   }
+
+  Map.prototype.addMarker = function(index, marker) {
+    this.markers[index] = marker
+    this.markers[index].setMap(this.gMap);
+    this.oms.addMarker(this.markers[index]);
+    _this = this;
+
+    google.maps.event.addListener(this.markers[index], 'click', function(key) {
+      return function(){
+         _this.infoWindow.setContent(_this.infoContent[key]);
+         _this.infoWindow.open(_this.gMap, _this.markers[key]);
+      }
+    }(index));
+  };
+
+  return Map;
+})();
+
+function initialize() {
+  window.map = new Map("map-canvas");
+  getPropertiesTo(window.location.pathname);
+}
+
+function getPropertiesTo(path) {
+  oboe({
+      url: "/api/imoveis"+window.location.pathname
+  }).node(".*", function(){
+  }).done(function(property) {
+    if (property.lat != 0){
+      var propertyLatLng = new google.maps.LatLng(property.lat, property.lng),
+          index = property.id;
+
+      window.map.extendBounds(propertyLatLng);
+      window.map.setContent(index, '<div id="content">'+
+         '<div id="siteNotice">'+
+         '</div>'+
+         '<h1 id="firstHeading" class="firstHeading">'+property.address+'</h1>'+
+         '<div id="bodyContent">'+
+           JSON.stringify(property, undefined, 2)+
+         '</div>'+
+         '</div>');
+
+      window.map.addMarker(index, new google.maps.Marker({
+        position: propertyLatLng,
+        title: property.address
+      }))
+    }
+  }).fail(function(err){
+    console.log("E", err.thrown)
+  })
+}
 
   // function centralize() {
   //     window.setTimeout(function() {
