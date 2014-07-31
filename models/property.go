@@ -50,25 +50,7 @@ func (p *Property) BeforeCreate() error {
 	if p.Address != "" {
 		var addressLocation []float64
 
-		l := strings.ToLower(p.Address)
-
-		if !(strings.Contains(l, "rua") ||
-			strings.Contains(l, "r ") ||
-			strings.Contains(l, "avenida") ||
-			strings.Contains(l, "av") ||
-			strings.Contains(l, "jardim") ||
-			strings.Contains(l, "praca") ||
-			strings.Contains(l, "pç") ||
-			strings.Contains(l, "vila")) {
-			p.Address = "Rua " + p.Address
-		}
-
-		if strings.Contains(l, "sob consulta") ||
-			strings.Contains(l, "nao informado") ||
-			strings.Contains(l, "não informado") ||
-			p.Address == "Rua "+p.Neighborhood {
-			p.Address = p.Neighborhood
-		}
+		p.Address = fixAddress(p.Address, p.Neighborhood)
 
 		addressLocationI, err := CacheGet(p.FullAddress(), addressLocation)
 		addressLocation, ok := addressLocationI.([]float64)
@@ -101,6 +83,30 @@ func (p *Property) BeforeCreate() error {
 	}
 
 	return nil
+}
+
+func fixAddress(address, neighborhood string) string {
+	l := strings.ToLower(address)
+
+	if !(strings.Contains(l, "rua") ||
+		strings.Contains(l, "r ") ||
+		strings.Contains(l, "avenida") ||
+		strings.Contains(l, "av") ||
+		strings.Contains(l, "jardim") ||
+		strings.Contains(l, "praca") ||
+		strings.Contains(l, "pç") ||
+		strings.Contains(l, "vila")) {
+		address = "Rua " + address
+	}
+
+	if strings.Contains(l, "sob consulta") ||
+		strings.Contains(l, "nao informado") ||
+		strings.Contains(l, "não informado") ||
+		address == "Rua "+neighborhood {
+		address = neighborhood
+	}
+
+	return address
 }
 
 type Geolocation struct {
